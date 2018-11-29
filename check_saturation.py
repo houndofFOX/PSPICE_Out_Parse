@@ -20,7 +20,7 @@ class Check_Saturation():
         # Setup Parse_PSPICE_Out Logger
         Parse_Logger = logging.getLogger("Parse_PSPICE_Out")
         # Create Parser object and Parse file
-        Parser = Parse_PSPICE_Out.Parse_PSPICE_Out(Logger, self.remote, self.filename)
+        Parser = Parse_PSPICE_Out.Parse_PSPICE_Out(Parse_Logger, self.remote, self.filename)
         MOS_List = Parser.parseFile()
         non_sat = []
         # Check if all MOSFETs are in saturation.
@@ -28,7 +28,7 @@ class Check_Saturation():
             if MOSFET.VDS == None or MOSFET.VDSAT == None:
                 self.Logger.critical("MOSFET {} has no VDS or VDSAT")
                 sys.exit()
-            if MOSFET.VDS - MOSFET.VDSAT < 0:
+            if not abs(MOSFET.VDS) >= abs(MOSFET.VDSAT):
                 non_sat.append(MOSFET.NAME)
         if len(non_sat) > 0:
             self.Logger.info("{} MOSFETS out of saturation: {}".format(len(non_sat), non_sat))

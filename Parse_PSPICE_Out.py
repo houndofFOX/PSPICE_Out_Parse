@@ -24,7 +24,7 @@ class Parse_PSPICE_Out():
                 Logger.warning("Setting retrieval type to \"local\"")
                 remote = 'l'
         # Check that requested file is available locally
-        self.filename = filename if remote.lower() in ['l', 'local'] else filname.split('/')[-1]
+        self.filename = filename if remote.lower() in ['l', 'local'] else filename.split('/')[-1]
         if not os.path.isfile(self.filename):
             Logger.critical("Invalid file name: {}".format(self.filename))
             sys.exit()
