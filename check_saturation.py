@@ -23,27 +23,37 @@ class Check_Saturation():
         Parser = Parse_PSPICE_Out.Parse_PSPICE_Out(Parse_Logger, self.remote, self.filename)
         MOS_List = Parser.parseFile()
         non_sat = []
+        sat_margin = 100
         von_out = []
-        # Check if all MOSFETs are in saturation.
+        von_margin = 100
+        # Check parameters for all MOSFETs.
         for MOSFET in MOS_List:
+            # Check if all MOSFETs are in saturation.
             if MOSFET.VDS == None or MOSFET.VDSAT == None:
                 self.Logger.critical("MOSFET {} has no VDS or VDSAT".format(MOSFET.NAME))
                 sys.exit()
-            if not abs(MOSFET.VDS) >= abs(MOSFET.VDSAT):
+            saturation = abs(MOSFET.VDS) - abs(MOSFET.VDSAT)
+            if saturation < 0:
                 non_sat.append(MOSFET.NAME)
+            sat_margin = saturation if sat_margin > saturation else sat_margin
+            # Check if Von requirement is met
             if MOSFET.VGS == None or MOSFET.VTH == None:
                 self.Logger.critical("MOSFET {} has not VGS or VTH".format(MOSFET.NAME))
                 sys.exit()
-            if not abs(MOSFET.VGS) - abs(MOSFET.VTH) > 0.150:
+            von = abs(MOSFET.VGS) - abs(MOSFET.VTH)
+            if von < 0.150:
                 von_out.append(MOSFET.NAME)
+            von_margin = von if von_margin > von else von_margin
         if len(non_sat) > 0:
             self.Logger.info("{} MOSFETS out of saturation: {}".format(len(non_sat), non_sat))
         else:
             self.Logger.info("All MOSFETS are in saturation!")
+        self.Logger.info("Saturation Margin: {}".format(sat_margin))
         if len(von_out) > 0:
             self.Logger.info("{} MOSFETS do not meet Von > 150mV: {}".format(len(von_out), von_out))
         else:
             self.Logger.info("All MOSFETS meet Von > 150mV")
+        self.Logger.info("Von Margin: {}".format(von_margin))
 
 if __name__ == '__main__':
     # Setup Logging
