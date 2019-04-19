@@ -19,6 +19,7 @@ class Check_Saturation():
     def process(self):
         # Setup Parse_PSPICE_Out Logger
         Parse_Logger = logging.getLogger("Parse_PSPICE_Out")
+        Parse_Logger.setLevel(self.Logger.getEffectiveLevel())
         # Create Parser object and Parse file
         Parser = Parse_PSPICE_Out.Parse_PSPICE_Out(Parse_Logger, self.remote, self.filename)
         MOS_List = Parser.parseFile()
@@ -28,13 +29,14 @@ class Check_Saturation():
         von_margin = 100
         # Check parameters for all MOSFETs.
         for MOSFET in MOS_List:
-            # Check if all MOSFETs are in saturation.
+            # Check if MOSFET is in saturation.
             if MOSFET.VDS == None or MOSFET.VDSAT == None:
                 self.Logger.critical("MOSFET {} has no VDS or VDSAT".format(MOSFET.NAME))
                 sys.exit()
             saturation = abs(MOSFET.VDS) - abs(MOSFET.VDSAT)
             if saturation < 0:
                 non_sat.append(MOSFET.NAME)
+            # Record saturation margin if necessary
             sat_margin = saturation if sat_margin > saturation else sat_margin
             # Check if Von requirement is met
             if MOSFET.VGS == None or MOSFET.VTH == None:
@@ -43,7 +45,9 @@ class Check_Saturation():
             von = abs(MOSFET.VGS) - abs(MOSFET.VTH)
             if von < 0.150:
                 von_out.append(MOSFET.NAME)
+            # Record Von margin if necessary
             von_margin = von if von_margin > von else von_margin
+        # Print results to user
         if len(non_sat) > 0:
             self.Logger.info("{} MOSFETS out of saturation: {}".format(len(non_sat), non_sat))
         else:

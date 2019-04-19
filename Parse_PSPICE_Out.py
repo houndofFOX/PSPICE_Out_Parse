@@ -48,6 +48,7 @@ class Parse_PSPICE_Out():
                         MOSFET = MOSFET_Params()
                         MOSFET.NAME = name.strip()
                         short_MOS_list.append(MOSFET)
+                # TODO: Funtionalize this shit
                 # Add ID values to MOSFETs in short_MOS_list
                 if "ID "  in line:
                     for MOSFET, param in zip(short_MOS_list, line.split()[1:]):
