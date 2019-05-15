@@ -29,6 +29,7 @@ class Check_Saturation():
         von_margin = 100
         # Check parameters for all MOSFETs.
         for MOSFET in MOS_List:
+            self.Logger.debug("MOSFET {}:".format(MOSFET.NAME))
             # Check if MOSFET is in saturation.
             if MOSFET.VDS == None or MOSFET.VDSAT == None:
                 self.Logger.critical("MOSFET {} has no VDS or VDSAT".format(MOSFET.NAME))
@@ -38,7 +39,7 @@ class Check_Saturation():
                 non_sat.append(MOSFET.NAME)
             # Record saturation margin if necessary
             sat_margin = saturation if sat_margin > saturation else sat_margin
-            # Check if Von requirement is met
+            # Check if Von requirement is metS
             if MOSFET.VGS == None or MOSFET.VTH == None:
                 self.Logger.critical("MOSFET {} has not VGS or VTH".format(MOSFET.NAME))
                 sys.exit()
@@ -47,6 +48,8 @@ class Check_Saturation():
                 von_out.append(MOSFET.NAME)
             # Record Von margin if necessary
             von_margin = von if von_margin > von else von_margin
+            self.Logger.debug("Vds - Vdsat = {}".format(saturation))
+            self.Logger.debug("Von = {}".format(von))
         # Print results to user
         if len(non_sat) > 0:
             self.Logger.info("{} MOSFETS out of saturation: {}".format(len(non_sat), non_sat))
